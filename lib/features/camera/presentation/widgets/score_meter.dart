@@ -15,14 +15,14 @@ class ScoreMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 36,
+      width: 48,
       height: 160,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: Column(
         children: [
           // Score number
@@ -42,7 +42,7 @@ class ScoreMeter extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
-                  Container(color: Colors.white.withOpacity(0.1)),
+                  Container(color: Colors.white.withValues(alpha: 0.1)),
                   AnimatedFractionallySizedBox(
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOut,
@@ -52,7 +52,7 @@ class ScoreMeter extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
-                          colors: [_color, _color.withOpacity(0.5)],
+                          colors: [_color, _color.withValues(alpha: 0.5)],
                         ),
                       ),
                     ),
