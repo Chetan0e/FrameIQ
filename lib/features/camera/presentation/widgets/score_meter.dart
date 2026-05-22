@@ -18,9 +18,9 @@ class ScoreMeter extends StatelessWidget {
       width: 36,
       height: 160,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       child: Column(
@@ -42,17 +42,23 @@ class ScoreMeter extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
-                  Container(color: Colors.white.withOpacity(0.1)),
-                  AnimatedFractionallySizedBox(
+                  Container(color: Colors.white.withValues(alpha: 0.1)),
+                  TweenAnimationBuilder<double>(
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOut,
-                    heightFactor: score / 100,
+                    tween: Tween<double>(begin: 0.0, end: score / 100),
+                    builder: (context, value, child) {
+                      return FractionallySizedBox(
+                        heightFactor: value,
+                        child: child,
+                      );
+                    },
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
-                          colors: [_color, _color.withOpacity(0.5)],
+                          colors: [_color, _color.withValues(alpha: 0.5)],
                         ),
                       ),
                     ),
@@ -64,7 +70,7 @@ class ScoreMeter extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             'SCORE',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 8,
               color: AppColors.textMuted,
               letterSpacing: 0.6,

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -14,7 +15,6 @@ import '../../../core/constants/app_constants.dart';
 class CoachingEngine {
   double _accelX = 0;
   double _accelY = 0;
-  double _accelZ = 9.8;
   double _prevAccelX = 0;
   double _prevAccelY = 0;
   double _deviceStillSeconds = 0;
@@ -24,7 +24,6 @@ class CoachingEngine {
     _prevAccelY = _accelY;
     _accelX = e.x;
     _accelY = e.y;
-    _accelZ = e.z;
 
     final delta = (_accelX - _prevAccelX) * (_accelX - _prevAccelX) +
         (_accelY - _prevAccelY) * (_accelY - _prevAccelY);
@@ -40,7 +39,7 @@ class CoachingEngine {
 
   /// Roll angle from gravity vector (positive = clockwise roll).
   double get horizonTiltDeg =>
-      math.atan2(_accelX, _accelZ) * (180 / math.pi);
+      -math.atan2(_accelX, _accelY) * (180 / math.pi);
 
   FrameAnalysis assemble({
     required SceneMode scene,
@@ -154,6 +153,16 @@ class CoachingEngine {
 
     final composition = _recommendComposition(scene, faceResult);
 
+    Rect? faceRect = faceResult?.faceRect;
+    if (faceRect != null && isFrontCamera) {
+      faceRect = Rect.fromLTWH(
+        1.0 - faceRect.right,
+        faceRect.top,
+        faceRect.width,
+        faceRect.height,
+      );
+    }
+
     return FrameAnalysis(
       detectedScene: scene,
       recommendedComposition: composition,
@@ -161,7 +170,7 @@ class CoachingEngine {
       compositionScore: score.clamp(0, 100),
       horizonTiltDeg: tilt,
       faceDetected: faceResult?.faceDetected ?? false,
-      faceRect: faceResult?.faceRect,
+      faceRect: faceRect,
       timestamp: DateTime.now(),
     );
   }

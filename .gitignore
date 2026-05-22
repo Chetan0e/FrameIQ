@@ -1,46 +1,123 @@
-# Miscellaneous
+# =============================================================================
+# FrameIQ — Flutter app .gitignore
+# =============================================================================
+
+# --- Miscellaneous -----------------------------------------------------------
 *.class
 *.log
 *.pyc
 *.swp
-.DS_Store
+*~
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# --- OS generated ------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# --- IDEs & editors ----------------------------------------------------------
 *.iml
 *.ipr
 *.iws
 .idea/
+*.sublime-project
+*.sublime-workspace
 
-# The .vscode folder contains build tasks and settings for VS Code
-.vscode/
+# VS Code / Cursor — uncomment to share launch.json & tasks with the team
+# .vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Local editor state (never commit)
+*.code-workspace
+
+# --- Secrets & environment ---------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.jks
+*.keystore
+key.properties
+**/secrets.yaml
+**/google-services.json
+**/GoogleService-Info.plist
+
+# --- Flutter / Dart / Pub ----------------------------------------------------
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
 /build/
+/coverage/
 
-# Web related
-lib/generated_plugin_registrant.dart
+# build_runner / code generation — uncomment if you never commit generated files:
+# *.g.dart
+# *.freezed.dart
+# *.mocks.dart
+# *.config.dart
 
-# Symbolication related
+# Symbolication & obfuscation (Flutter tooling)
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will automatically add this to its gitignore
-*.jks
-*.keystore
+# Widget preview (Flutter 3.38+)
+.widget_preview/
 
-# Exceptions to above rules.
-!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+# API docs
+**/doc/api/
+
+# --- Android (app module; see also android/.gitignore) -----------------------
+/android/.gradle/
+/android/captures/
+/android/local.properties
+/android/**/GeneratedPluginRegistrant.java
+/android/.cxx/
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+/android/**/*.salive
+
+# --- iOS / macOS (when you add the platform) ---------------------------------
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/ephemeral/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/macos/Flutter/ephemeral/
+**/macos/Pods/
+
+# --- Web ---------------------------------------------------------------------
+lib/generated_plugin_registrant.dart
+
+# --- Test & tooling output ---------------------------------------------------
+.test_runner/
+test/**/failures/
+test/**/goldens/**/*.png
+!test/**/goldens/**/README.md
+
+# --- ML Kit / large local assets (optional) ----------------------------------
+# Uncomment if you download models into the repo instead of bundling them:
+# assets/ml_models/
+# *.tflite
+
+# --- Misc tooling ------------------------------------------------------------
+.fvm/
+.fvmrc
+melos_*.log
+devtools_options.yaml

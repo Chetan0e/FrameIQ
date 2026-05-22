@@ -10,6 +10,7 @@ class CompositionPainter extends CustomPainter {
   final double opacity;
   final double horizonTiltDeg;
   final Rect? faceRect;
+  final Size? cameraPreviewSize;
 
   final Paint _gridPaint = Paint()..style = PaintingStyle.stroke;
   final Paint _gridDotPaint = Paint()..style = PaintingStyle.fill;
@@ -30,43 +31,44 @@ class CompositionPainter extends CustomPainter {
     required this.opacity,
     this.horizonTiltDeg = 0.0,
     this.faceRect,
+    this.cameraPreviewSize,
   });
 
   void _applyOpacity() {
     final o = opacity.clamp(0.0, 1.0);
     _gridPaint
-      ..color = AppColors.overlayGrid.withOpacity(o)
+      ..color = AppColors.overlayGrid.withValues(alpha: o)
       ..strokeWidth = 0.8;
-    _gridDotPaint.color = AppColors.overlayGridPower.withOpacity(o);
+    _gridDotPaint.color = AppColors.overlayGridPower.withValues(alpha: o);
     _gridRingPaint
-      ..color = AppColors.overlayGridPower.withOpacity(o * 0.3)
+      ..color = AppColors.overlayGridPower.withValues(alpha: o * 0.3)
       ..strokeWidth = 1;
     _spiralPaint
-      ..color = AppColors.overlaySpiral.withOpacity(o)
+      ..color = AppColors.overlaySpiral.withValues(alpha: o)
       ..strokeWidth = 1.5;
-    _spiralDotPaint.color = AppColors.overlaySpiral.withOpacity(o);
+    _spiralDotPaint.color = AppColors.overlaySpiral.withValues(alpha: o);
     _symmetryPaint
-      ..color = AppColors.overlaySymmetry.withOpacity(o)
+      ..color = AppColors.overlaySymmetry.withValues(alpha: o)
       ..strokeWidth = 1.2;
     _leadingPaint
-      ..color = AppColors.overlayLeading.withOpacity(o)
+      ..color = AppColors.overlayLeading.withValues(alpha: o)
       ..strokeWidth = 1.2;
-    _leadingDotPaint.color = AppColors.overlayLeading.withOpacity(o);
+    _leadingDotPaint.color = AppColors.overlayLeading.withValues(alpha: o);
     _diagonalPaint
-      ..color = AppColors.overlayDiagonal.withOpacity(o)
+      ..color = AppColors.overlayDiagonal.withValues(alpha: o)
       ..strokeWidth = 1.5;
     _centerPaint
-      ..color = AppColors.overlaySymmetry.withOpacity(o)
+      ..color = AppColors.overlaySymmetry.withValues(alpha: o)
       ..strokeWidth = 1.2;
     final horizonColor = horizonTiltDeg.abs() < 1.5
         ? AppColors.success
         : AppColors.overlayHorizon;
     _horizonPaint
-      ..color = horizonColor.withOpacity(o * 0.7)
+      ..color = horizonColor.withValues(alpha: o * 0.7)
       ..strokeWidth = 1.0;
-    _horizonDotPaint.color = horizonColor.withOpacity(o * 0.8);
+    _horizonDotPaint.color = horizonColor.withValues(alpha: o * 0.8);
     _facePaint
-      ..color = AppColors.accent3.withOpacity(o * 0.7)
+      ..color = AppColors.accent3.withValues(alpha: o * 0.7)
       ..strokeWidth = 1.5;
   }
 
@@ -136,46 +138,32 @@ class CompositionPainter extends CustomPainter {
   void _drawGoldenSpiral(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    const phi = 1.618033988;
     final cx = w * 0.618;
     final cy = h * 0.382;
 
-    double rectW = w;
-    double rectH = h;
-    double x = 0;
-    double y = 0;
-    bool horizontal = true;
+    final path = Path();
+    const phi = 1.6180339887;
+    final b = math.log(phi) / (math.pi / 2); // ~0.3063489
+    
+    // Wind in beautifully to the focal point (cx, cy).
+    final maxRadius = math.max(w, h) * 0.8;
+    bool first = true;
+    
+    for (double theta = 0; theta < 6 * math.pi; theta += 0.05) {
+      final r = maxRadius * math.exp(-b * theta);
+      final angle = theta - 0.8; // Align start angle beautifully for portrait
+      final px = cx + r * math.cos(angle);
+      final py = cy + r * math.sin(angle);
 
-    for (int i = 0; i < 7; i++) {
-      if (horizontal) {
-        final newW = rectW / phi;
-        canvas.drawArc(
-          Rect.fromCenter(
-              center: Offset(x + newW, y + rectH), width: rectH * 2, height: rectH * 2),
-          -math.pi / 2,
-          math.pi / 2,
-          false,
-          _spiralPaint,
-        );
-        x += newW;
-        rectW -= newW;
+      if (first) {
+        path.moveTo(px, py);
+        first = false;
       } else {
-        final newH = rectH / phi;
-        canvas.drawArc(
-          Rect.fromCenter(
-              center: Offset(x, y + newH), width: rectW * 2, height: rectW * 2),
-          0,
-          math.pi / 2,
-          false,
-          _spiralPaint,
-        );
-        y += newH;
-        rectH -= newH;
+        path.lineTo(px, py);
       }
-      horizontal = !horizontal;
     }
-
-    // Focal point dot
+    
+    canvas.drawPath(path, _spiralPaint);
     canvas.drawCircle(Offset(cx, cy), 6, _spiralDotPaint);
   }
 
@@ -243,9 +231,9 @@ class CompositionPainter extends CustomPainter {
     final h = size.height;
     canvas.drawLine(Offset(0, h), Offset(w, 0), _diagonalPaint);
     _diagonalPaint.color =
-        AppColors.overlayDiagonal.withOpacity(opacity * 0.3);
+        AppColors.overlayDiagonal.withValues(alpha: opacity * 0.3);
     canvas.drawLine(Offset.zero, Offset(w, h), _diagonalPaint);
-    _diagonalPaint.color = AppColors.overlayDiagonal.withOpacity(opacity);
+    _diagonalPaint.color = AppColors.overlayDiagonal.withValues(alpha: opacity);
   }
 
   // ────────────────────────────────────────────────────
@@ -292,11 +280,30 @@ class CompositionPainter extends CustomPainter {
   // FACE BOUNDING BOX
   // ────────────────────────────────────────────────────
   void _drawFaceBox(Canvas canvas, Size size, Rect normRect) {
+    double scaleX = size.width;
+    double scaleY = size.height;
+    double offsetX = 0.0;
+    double offsetY = 0.0;
+
+    if (cameraPreviewSize != null) {
+      final previewW = cameraPreviewSize!.width;
+      final previewH = cameraPreviewSize!.height;
+
+      final double scale = math.max(size.width / previewW, size.height / previewH);
+      final double scaledW = previewW * scale;
+      final double scaledH = previewH * scale;
+
+      offsetX = (size.width - scaledW) / 2;
+      offsetY = (size.height - scaledH) / 2;
+      scaleX = scaledW;
+      scaleY = scaledH;
+    }
+
     final rect = Rect.fromLTWH(
-      normRect.left * size.width,
-      normRect.top * size.height,
-      normRect.width * size.width,
-      normRect.height * size.height,
+      offsetX + normRect.left * scaleX,
+      offsetY + normRect.top * scaleY,
+      normRect.width * scaleX,
+      normRect.height * scaleY,
     );
 
     final clen = math.min(rect.width, rect.height) * 0.2;
@@ -345,5 +352,6 @@ class CompositionPainter extends CustomPainter {
       old.type != type ||
       old.opacity != opacity ||
       old.horizonTiltDeg != horizonTiltDeg ||
-      old.faceRect != faceRect;
+      old.faceRect != faceRect ||
+      old.cameraPreviewSize != cameraPreviewSize;
 }

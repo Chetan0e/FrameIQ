@@ -77,6 +77,11 @@ class FaceCoachService {
       final suggestions = <CoachingSuggestion>[];
       double score = 100.0;
 
+      final bool isRotated = rotation == InputImageRotation.rotation90deg ||
+          rotation == InputImageRotation.rotation270deg;
+      final double rotatedWidth = isRotated ? previewSize.height : previewSize.width;
+      final double rotatedHeight = isRotated ? previewSize.width : previewSize.height;
+
       final tiltZ = face.headEulerAngleZ ?? 0;
       if (tiltZ.abs() > 15) {
         suggestions.add(CoachingSuggestion(
@@ -101,7 +106,7 @@ class FaceCoachService {
         score -= 10;
       }
 
-      final faceTop = face.boundingBox.top / previewSize.height;
+      final faceTop = face.boundingBox.top / rotatedHeight;
       if (faceTop > 0.5) {
         suggestions.add(const CoachingSuggestion(
           type: SuggestionType.info,
@@ -112,7 +117,7 @@ class FaceCoachService {
         score -= 15;
       }
 
-      final faceWidthRatio = face.boundingBox.width / previewSize.width;
+      final faceWidthRatio = face.boundingBox.width / rotatedWidth;
       if (faceWidthRatio < 0.15) {
         suggestions.add(const CoachingSuggestion(
           type: SuggestionType.info,
@@ -153,10 +158,10 @@ class FaceCoachService {
       }
 
       final normRect = Rect.fromLTWH(
-        face.boundingBox.left / previewSize.width,
-        face.boundingBox.top / previewSize.height,
-        face.boundingBox.width / previewSize.width,
-        face.boundingBox.height / previewSize.height,
+        face.boundingBox.left / rotatedWidth,
+        face.boundingBox.top / rotatedHeight,
+        face.boundingBox.width / rotatedWidth,
+        face.boundingBox.height / rotatedHeight,
       );
 
       return FaceCoachResult(

@@ -36,10 +36,10 @@ class _SuggestionPill extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.72),
+        color: Colors.black.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: Colors.white.withOpacity(0.08),
+          color: Colors.white.withValues(alpha: 0.08),
           width: 1,
         ),
         // very subtle blur via BackdropFilter in parent if needed

@@ -55,7 +55,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     } else if (state == AppLifecycleState.resumed) {
       final ctrl = ref.read(cameraControllerProvider).valueOrNull;
       if (ctrl != null && !ctrl.value.isStreamingImages) {
-        ref.read(cameraControllerProvider.notifier);
+        ref.read(cameraControllerProvider.notifier).resumeImageStream();
       }
     }
   }
@@ -93,6 +93,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                     opacity: _overlayFade.value * overlayBase,
                     horizonTiltDeg: analysis.horizonTiltDeg,
                     faceRect: analysis.faceRect,
+                    cameraPreviewSize: controller.value.previewSize != null
+                        ? Size(controller.value.previewSize!.height,
+                            controller.value.previewSize!.width)
+                        : null,
                   ),
                 ),
               ),
@@ -108,7 +112,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.7),
+                        Colors.black.withValues(alpha: 0.7),
                         Colors.transparent,
                       ],
                     ),

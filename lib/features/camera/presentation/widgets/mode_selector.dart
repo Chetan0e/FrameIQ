@@ -44,13 +44,13 @@ class ModeSelector extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
                 color: isActive
-                    ? AppColors.accent.withOpacity(0.15)
-                    : Colors.black.withOpacity(0.5),
+                    ? AppColors.accent.withValues(alpha: 0.15)
+                    : Colors.black.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isActive
                       ? AppColors.accent
-                      : Colors.white.withOpacity(0.12),
+                      : Colors.white.withValues(alpha: 0.12),
                   width: 1,
                 ),
               ),

@@ -28,6 +28,8 @@ final manualSceneModeProvider = StateProvider<SceneMode?>((ref) => null);
 
 final overlayOpacityProvider = StateProvider<double>((ref) => 0.55);
 
+final autoOpacityProvider = StateProvider<bool>((ref) => true);
+
 final shutterFlashProvider = StateProvider<bool>((ref) => false);
 
 final deviceStillProvider = StateProvider<bool>((ref) => false);
@@ -92,12 +94,14 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
       final tilt = _engine.horizonTiltDeg;
       ref.read(frameAnalysisProvider.notifier).updateTilt(tilt);
 
-      final analysis = ref.read(frameAnalysisProvider);
-      final wellComposed = analysis.compositionScore >= 85 &&
-          analysis.horizonTiltDeg.abs() < 1.5;
-      final base = wellComposed ? 0.4 : AppConstants.overlayOpacityActive;
-      final opacity = _engine.isDeviceStill ? 0.0 : base;
-      ref.read(overlayOpacityProvider.notifier).state = opacity;
+      if (ref.read(autoOpacityProvider)) {
+        final analysis = ref.read(frameAnalysisProvider);
+        final wellComposed = analysis.compositionScore >= 85 &&
+            analysis.horizonTiltDeg.abs() < 1.5;
+        final base = wellComposed ? 0.4 : AppConstants.overlayOpacityActive;
+        final opacity = _engine.isDeviceStill ? 0.0 : base;
+        ref.read(overlayOpacityProvider.notifier).state = opacity;
+      }
     });
   }
 
@@ -189,6 +193,13 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
     } catch (e) {
       debugPrint('${AppConstants.tag}: capture error $e');
       return null;
+    }
+  }
+
+  void resumeImageStream() {
+    final ctrl = state.valueOrNull;
+    if (ctrl != null && !ctrl.value.isStreamingImages) {
+      _startImageStream(ctrl);
     }
   }
 
