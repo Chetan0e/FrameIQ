@@ -15,14 +15,14 @@ class ScoreMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 36,
+      width: 48,
       height: 160,
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: Column(
         children: [
           // Score number
@@ -43,7 +43,11 @@ class ScoreMeter extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 children: [
                   Container(color: Colors.white.withValues(alpha: 0.1)),
+<<<<<<< HEAD
                   TweenAnimationBuilder<double>(
+=======
+                  AnimatedFractionallySizedBox(
+>>>>>>> eacce8c11ea1ce82365e02e44cb101f1683bd073
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOut,
                     tween: Tween<double>(begin: 0.0, end: score / 100),
