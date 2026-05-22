@@ -43,11 +43,7 @@ class ScoreMeter extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 children: [
                   Container(color: Colors.white.withValues(alpha: 0.1)),
-<<<<<<< HEAD
                   TweenAnimationBuilder<double>(
-=======
-                  AnimatedFractionallySizedBox(
->>>>>>> eacce8c11ea1ce82365e02e44cb101f1683bd073
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOut,
                     tween: Tween<double>(begin: 0.0, end: score / 100),
