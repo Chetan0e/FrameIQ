@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/enums/scene_mode.dart';
@@ -201,10 +204,14 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       ref.read(shutterFlashProvider.notifier).state = false;
     }
     if (file != null && mounted) {
+      // Save image to device gallery
+      final result = await ImageGallerySaver.saveFile(file.path);
+      final isSuccess = result['isSuccess'] ?? false;
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Saved: ${file.name}'),
-          backgroundColor: AppColors.card,
+          content: Text(isSuccess ? 'Saved to gallery' : 'Failed to save'),
+          backgroundColor: isSuccess ? AppColors.card : Colors.red,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
