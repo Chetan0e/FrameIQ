@@ -195,15 +195,18 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   }
 
   Future<void> _capture(CameraController controller) async {
-    ref.read(shutterFlashProvider.notifier).state = true;
     HapticFeedback.heavyImpact();
     final file =
         await ref.read(cameraControllerProvider.notifier).capture();
-    await Future.delayed(const Duration(milliseconds: 120));
-    if (mounted) {
-      ref.read(shutterFlashProvider.notifier).state = false;
-    }
+    
     if (file != null && mounted) {
+      // Show flash after capture
+      ref.read(shutterFlashProvider.notifier).state = true;
+      await Future.delayed(const Duration(milliseconds: 80));
+      if (mounted) {
+        ref.read(shutterFlashProvider.notifier).state = false;
+      }
+      
       // Save image to device gallery
       final result = await ImageGallerySaver.saveFile(file.path);
       final isSuccess = result['isSuccess'] ?? false;
