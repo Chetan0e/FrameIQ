@@ -96,6 +96,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                     opacity: _overlayFade.value * overlayBase,
                     horizonTiltDeg: analysis.horizonTiltDeg,
                     faceRect: analysis.faceRect,
+                    postureGuide: analysis.postureGuide,
                     cameraPreviewSize: controller.value.previewSize != null
                         ? Size(controller.value.previewSize!.height,
                             controller.value.previewSize!.width)
@@ -129,7 +130,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                 right: 0,
                 child: HudBar(
                   scene: ref.watch(manualSceneModeProvider) ??
-                      analysis.detectedScene,
+                      SceneMode.auto,
                   onFlip: () => ref
                       .read(cameraControllerProvider.notifier)
                       .flipCamera(),
@@ -154,8 +155,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                 left: 0,
                 right: 0,
                 child: ModeSelector(
-                  currentScene: ref.watch(manualSceneModeProvider) ??
-                      analysis.detectedScene,
+                  isAutoMode: ref.watch(manualSceneModeProvider) == null,
+                  manualMode: ref.watch(manualSceneModeProvider),
                   onModeSelected: (mode) {
                     ref.read(manualSceneModeProvider.notifier).state =
                         mode == SceneMode.auto ? null : mode;

@@ -6,6 +6,7 @@ enum CompositionType {
   leadingLines,
   diagonal,
   centerFrame,
+  selfiePosture,
   none,
 }
 
@@ -19,6 +20,7 @@ extension CompositionTypeX on CompositionType {
       case CompositionType.leadingLines:   return 'Leading Lines';
       case CompositionType.diagonal:       return 'Diagonal';
       case CompositionType.centerFrame:    return 'Center Frame';
+      case CompositionType.selfiePosture:  return 'Selfie Posture';
       case CompositionType.none:           return 'None';
     }
   }
@@ -39,6 +41,8 @@ extension CompositionTypeX on CompositionType {
         return 'Tilt for energy and movement';
       case CompositionType.centerFrame:
         return 'Subject centered for impact';
+      case CompositionType.selfiePosture:
+        return 'Match pose to the scene behind you';
       case CompositionType.none:
         return '';
     }
@@ -61,6 +65,8 @@ extension CompositionTypeX on CompositionType {
         return ['action', 'street', 'architecture'];
       case CompositionType.centerFrame:
         return ['portrait', 'selfie', 'food', 'architecture'];
+      case CompositionType.selfiePosture:
+        return ['selfie'];
       case CompositionType.none:
         return [];
     }

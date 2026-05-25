@@ -8,6 +8,7 @@ import '../../camera/domain/enums/composition_type.dart';
 import '../../camera/domain/enums/scene_mode.dart';
 import '../../camera/domain/models/coaching_suggestion.dart';
 import '../../camera/domain/models/frame_analysis.dart';
+import '../../camera/domain/models/selfie_posture_guide.dart';
 import '../../../core/constants/app_constants.dart';
 
 /// Assembles a complete [FrameAnalysis] from individual service results
@@ -43,9 +44,13 @@ class CoachingEngine {
 
   FrameAnalysis assemble({
     required SceneMode scene,
+    required SceneMode backgroundScene,
     required FaceCoachResult? faceResult,
     required bool isFrontCamera,
   }) {
+    final isSelfie = scene == SceneMode.selfie ||
+        (isFrontCamera &&
+            (scene == SceneMode.portrait || scene == SceneMode.auto));
     final suggestions = <CoachingSuggestion>[];
     double score = 70.0;
 
@@ -137,8 +142,28 @@ class CoachingEngine {
           emoji: '⚡',
         ));
         break;
+      case SceneMode.selfie:
+        suggestions.add(CoachingSuggestion(
+          type: SuggestionType.info,
+          label: 'POSTURE',
+          message: _selfiePostureMessage(backgroundScene),
+          emoji: '🤳',
+        ));
+        break;
       default:
         break;
+    }
+
+    if (isSelfie && suggestions.every((s) => s.label != 'POSTURE')) {
+      suggestions.insert(
+        0,
+        CoachingSuggestion(
+          type: SuggestionType.info,
+          label: 'POSTURE',
+          message: _selfiePostureMessage(backgroundScene),
+          emoji: '🤳',
+        ),
+      );
     }
 
     if (suggestions.isEmpty) {
@@ -151,7 +176,10 @@ class CoachingEngine {
       score = math.min(score + 10, 100);
     }
 
-    final composition = _recommendComposition(scene, faceResult);
+    final composition = _recommendComposition(scene, faceResult, isSelfie);
+    final postureGuide = isSelfie
+        ? _buildSelfiePostureGuide(backgroundScene, faceResult?.faceRect)
+        : null;
 
     Rect? faceRect = faceResult?.faceRect;
     if (faceRect != null && isFrontCamera) {
@@ -171,8 +199,58 @@ class CoachingEngine {
       horizonTiltDeg: tilt,
       faceDetected: faceResult?.faceDetected ?? false,
       faceRect: faceRect,
+      postureGuide: postureGuide,
       timestamp: DateTime.now(),
     );
+  }
+
+  static String _selfiePostureMessage(SceneMode background) {
+    switch (background) {
+      case SceneMode.landscape:
+      case SceneMode.street:
+        return 'Shift to the side — let the background breathe behind you';
+      case SceneMode.architecture:
+        return 'Stand centered — align your shoulders with the building axis';
+      case SceneMode.food:
+      case SceneMode.macro:
+        return 'Lean in slightly — keep your face in the upper center';
+      case SceneMode.action:
+        return 'Angle your body diagonally for a more dynamic selfie';
+      case SceneMode.night:
+        return 'Hold steady — keep face in the bright upper third';
+      default:
+        return 'Follow the ghost outline — place your face on the guide';
+    }
+  }
+
+  static SelfiePostureGuide _buildSelfiePostureGuide(
+    SceneMode background,
+    Rect? faceRect,
+  ) {
+    final style = switch (background) {
+      SceneMode.landscape || SceneMode.street => SelfiePostureStyle.environmental,
+      SceneMode.architecture => SelfiePostureStyle.symmetryCenter,
+      SceneMode.food || SceneMode.macro => SelfiePostureStyle.casualCenter,
+      SceneMode.action => SelfiePostureStyle.dynamicDiagonal,
+      _ => SelfiePostureStyle.offCenterThirds,
+    };
+
+    final faceCenterX = faceRect?.center.dx ?? 0.5;
+    final Offset target;
+    switch (style) {
+      case SelfiePostureStyle.environmental:
+        target = Offset(0.5, 0.34);
+      case SelfiePostureStyle.symmetryCenter:
+        target = const Offset(0.5, 0.30);
+      case SelfiePostureStyle.casualCenter:
+        target = const Offset(0.5, 0.28);
+      case SelfiePostureStyle.dynamicDiagonal:
+        target = const Offset(0.42, 0.30);
+      case SelfiePostureStyle.offCenterThirds:
+        target = Offset(faceCenterX > 0.55 ? 0.33 : 0.67, 0.30);
+    }
+
+    return SelfiePostureGuide(targetHeadCenter: target, style: style);
   }
 
   static List<CoachingSuggestion> _topSuggestions(
@@ -189,7 +267,13 @@ class CoachingEngine {
   }
 
   CompositionType _recommendComposition(
-      SceneMode scene, FaceCoachResult? face) {
+    SceneMode scene,
+    FaceCoachResult? face,
+    bool isSelfie,
+  ) {
+    if (isSelfie) {
+      return CompositionType.selfiePosture;
+    }
     if (face != null && face.faceDetected) {
       return CompositionType.ruleOfThirds;
     }

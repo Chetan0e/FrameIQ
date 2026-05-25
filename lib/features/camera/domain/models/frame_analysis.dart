@@ -3,6 +3,7 @@ import 'dart:ui' show Rect;
 import '../enums/composition_type.dart';
 import '../enums/scene_mode.dart';
 import 'coaching_suggestion.dart';
+import 'selfie_posture_guide.dart';
 
 /// The complete result of one analysis pass on the live camera frame.
 class FrameAnalysis {
@@ -13,6 +14,7 @@ class FrameAnalysis {
   final double horizonTiltDeg;  // positive = clockwise tilt
   final bool faceDetected;
   final Rect? faceRect;
+  final SelfiePostureGuide? postureGuide;
   final bool isWellLit;
   final DateTime timestamp;
 
@@ -24,6 +26,7 @@ class FrameAnalysis {
     this.horizonTiltDeg = 0.0,
     this.faceDetected = false,
     this.faceRect,
+    this.postureGuide,
     this.isWellLit = true,
     required this.timestamp,
   });
@@ -45,6 +48,7 @@ class FrameAnalysis {
     double? horizonTiltDeg,
     bool? faceDetected,
     Rect? faceRect,
+    SelfiePostureGuide? postureGuide,
     bool? isWellLit,
     DateTime? timestamp,
   }) {
@@ -56,6 +60,7 @@ class FrameAnalysis {
       horizonTiltDeg: horizonTiltDeg ?? this.horizonTiltDeg,
       faceDetected: faceDetected ?? this.faceDetected,
       faceRect: faceRect ?? this.faceRect,
+      postureGuide: postureGuide ?? this.postureGuide,
       isWellLit: isWellLit ?? this.isWellLit,
       timestamp: timestamp ?? this.timestamp,
     );

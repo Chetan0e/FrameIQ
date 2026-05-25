@@ -3,7 +3,8 @@ import '../../domain/enums/scene_mode.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class ModeSelector extends StatelessWidget {
-  final SceneMode currentScene;
+  final bool isAutoMode;
+  final SceneMode? manualMode;
   final ValueChanged<SceneMode> onModeSelected;
 
   static const _modes = [
@@ -21,7 +22,8 @@ class ModeSelector extends StatelessWidget {
 
   const ModeSelector({
     super.key,
-    required this.currentScene,
+    required this.isAutoMode,
+    required this.manualMode,
     required this.onModeSelected,
   });
 
@@ -36,7 +38,9 @@ class ModeSelector extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final mode = _modes[i];
-          final isActive = mode == currentScene;
+          final isActive = mode == SceneMode.auto
+              ? isAutoMode
+              : manualMode == mode;
           return GestureDetector(
             onTap: () => onModeSelected(mode),
             child: AnimatedContainer(

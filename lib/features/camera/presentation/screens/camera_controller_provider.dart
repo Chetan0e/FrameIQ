@@ -143,11 +143,17 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
             );
             final faceResult =
                 await _faceCoach.analyze(image, rotation, previewSize);
-            final currentScene =
+            final detected =
                 ref.read(frameAnalysisProvider).detectedScene;
-            final isFront = camera.lensDirection == CameraLensDirection.front;
+            final manual = ref.read(manualSceneModeProvider);
+            final isFront =
+                camera.lensDirection == CameraLensDirection.front;
+            final sceneForCoaching = manual ??
+                (isFront ? SceneMode.selfie : detected);
+            final backgroundScene = _postureBackgroundScene(detected);
             final analysis = _engine.assemble(
-              scene: currentScene,
+              scene: sceneForCoaching,
+              backgroundScene: backgroundScene,
               faceResult: faceResult,
               isFrontCamera: isFront,
             );
@@ -200,6 +206,16 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
     final ctrl = state.valueOrNull;
     if (ctrl != null && !ctrl.value.isStreamingImages) {
       _startImageStream(ctrl);
+    }
+  }
+
+  static SceneMode _postureBackgroundScene(SceneMode detected) {
+    switch (detected) {
+      case SceneMode.auto:
+      case SceneMode.selfie:
+        return SceneMode.portrait;
+      default:
+        return detected;
     }
   }
 

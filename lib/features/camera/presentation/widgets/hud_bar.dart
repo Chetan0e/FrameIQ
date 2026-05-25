@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/enums/scene_mode.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../screens/camera_controller_provider.dart';
 
 class HudBar extends ConsumerWidget {
@@ -153,6 +154,11 @@ class HudBar extends ConsumerWidget {
                       value: isAuto,
                       onChanged: (val) {
                         ref.read(autoOpacityProvider.notifier).state = val;
+                        if (!val &&
+                            ref.read(overlayOpacityProvider) < 0.1) {
+                          ref.read(overlayOpacityProvider.notifier).state =
+                              AppConstants.overlayOpacityActive;
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
