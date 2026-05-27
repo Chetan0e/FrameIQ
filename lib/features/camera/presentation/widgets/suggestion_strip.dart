@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../domain/models/coaching_suggestion.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/glass_container.dart';
 
 class SuggestionStrip extends StatelessWidget {
   final List<CoachingSuggestion> suggestions;
@@ -15,11 +16,19 @@ class SuggestionStrip extends StatelessWidget {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: suggestions
-          .map((s) => _SuggestionPill(suggestion: s)
-              .animate()
-              .fadeIn(duration: 300.ms)
-              .slideY(begin: 0.3, end: 0, duration: 300.ms, curve: Curves.easeOut))
+          .map(
+            (s) => _SuggestionPill(suggestion: s)
+                .animate()
+                .fadeIn(duration: 280.ms)
+                .slideY(
+                  begin: 0.2,
+                  end: 0,
+                  duration: 280.ms,
+                  curve: Curves.easeOutCubic,
+                ),
+          )
           .toList(),
     );
   }
@@ -32,59 +41,59 @@ class _SuggestionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GlassContainer(
+        borderRadius: 16,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: suggestion.bgColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: suggestion.iconColor.withValues(alpha: 0.35),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                suggestion.emoji,
+                style: const TextStyle(fontSize: 17),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    suggestion.label,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.9,
+                      color: suggestion.iconColor,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    suggestion.message,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textPrimary,
+                      height: 1.35,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        // very subtle blur via BackdropFilter in parent if needed
-      ),
-      child: Row(
-        children: [
-          // Icon badge
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: suggestion.bgColor,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            alignment: Alignment.center,
-            child: Text(suggestion.emoji, style: const TextStyle(fontSize: 16)),
-          ),
-          const SizedBox(width: 12),
-          // Text
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  suggestion.label,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: suggestion.iconColor,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  suggestion.message,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    color: AppColors.textPrimary,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

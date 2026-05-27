@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../../domain/enums/scene_mode.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/glass_container.dart';
 
 class ModeSelector extends StatelessWidget {
   final bool isAutoMode;
@@ -30,10 +33,10 @@ class ModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 36,
+      height: 40,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: _modes.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
@@ -41,35 +44,59 @@ class ModeSelector extends StatelessWidget {
           final isActive = mode == SceneMode.auto
               ? isAutoMode
               : manualMode == mode;
-          return GestureDetector(
-            onTap: () => onModeSelected(mode),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? AppColors.accent.withValues(alpha: 0.15)
-                    : Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isActive
-                      ? AppColors.accent
-                      : Colors.white.withValues(alpha: 0.12),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                '${mode.emoji} ${mode.label}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-                  color: isActive ? AppColors.accent : AppColors.textMuted,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ),
+
+          return _ModeChip(
+            mode: mode,
+            isActive: isActive,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onModeSelected(mode);
+            },
           );
         },
+      ),
+    );
+  }
+}
+
+class _ModeChip extends StatelessWidget {
+  final SceneMode mode;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _ModeChip({
+    required this.mode,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        child: GlassContainer(
+          borderRadius: 20,
+          blur: false,
+          tint: isActive ? AppColors.accent : Colors.black,
+          border: Border.all(
+            color: isActive
+                ? AppColors.accent.withValues(alpha: 0.85)
+                : Colors.white.withValues(alpha: 0.1),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Text(
+            '${mode.emoji} ${mode.label}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              color: isActive ? AppColors.accent : AppColors.textMuted,
+              letterSpacing: 0.15,
+            ),
+          ),
+        ),
       ),
     );
   }

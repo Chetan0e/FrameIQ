@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,11 +7,9 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/enums/scene_mode.dart';
 import '../painters/composition_painter.dart';
+import '../widgets/camera_bottom_bar.dart';
 import '../widgets/hud_bar.dart';
-import '../widgets/mode_selector.dart';
 import '../widgets/score_meter.dart';
-import '../widgets/shutter_button.dart';
-import '../widgets/suggestion_strip.dart';
 import 'camera_controller_provider.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
@@ -68,6 +64,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     final cameraAsync = ref.watch(cameraControllerProvider);
     final analysis = ref.watch(frameAnalysisProvider);
     final overlayBase = ref.watch(overlayOpacityProvider);
+    final manualMode = ref.watch(manualSceneModeProvider);
+    final isAutoMode = manualMode == null;
 
     ref.listen(overlayOpacityProvider, (prev, next) {
       if (next > (prev ?? 0)) {
@@ -79,6 +77,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
     return Scaffold(
       backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       body: cameraAsync.when(
         loading: () => const _LoadingView(),
         error: (e, _) => _ErrorView(error: e.toString()),
@@ -98,25 +97,28 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                     faceRect: analysis.faceRect,
                     postureGuide: analysis.postureGuide,
                     cameraPreviewSize: controller.value.previewSize != null
-                        ? Size(controller.value.previewSize!.height,
-                            controller.value.previewSize!.width)
+                        ? Size(
+                            controller.value.previewSize!.height,
+                            controller.value.previewSize!.width,
+                          )
                         : null,
                   ),
                 ),
               ),
 
+              // Top vignette
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
-                height: 100,
+                height: 120,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.7),
+                        Colors.black.withValues(alpha: 0.75),
                         Colors.transparent,
                       ],
                     ),
@@ -129,51 +131,30 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                 left: 0,
                 right: 0,
                 child: HudBar(
-                  scene: ref.watch(manualSceneModeProvider) ??
-                      SceneMode.auto,
-                  onFlip: () => ref
-                      .read(cameraControllerProvider.notifier)
-                      .flipCamera(),
+                  scene: manualMode ?? SceneMode.auto,
+                  isAutoMode: isAutoMode,
+                  detectedScene: analysis.detectedScene,
                 ),
               ),
 
               Positioned(
-                left: 16,
-                top: MediaQuery.of(context).size.height * 0.25,
+                left: 12,
+                top: MediaQuery.paddingOf(context).top + 72,
                 child: ScoreMeter(score: analysis.compositionScore),
               ),
 
-              Positioned(
-                bottom: 140,
-                left: 16,
-                right: 16,
-                child: SuggestionStrip(suggestions: analysis.suggestions),
-              ),
-
-              Positioned(
-                bottom: 80,
-                left: 0,
-                right: 0,
-                child: ModeSelector(
-                  isAutoMode: ref.watch(manualSceneModeProvider) == null,
-                  manualMode: ref.watch(manualSceneModeProvider),
-                  onModeSelected: (mode) {
-                    ref.read(manualSceneModeProvider.notifier).state =
-                        mode == SceneMode.auto ? null : mode;
-                  },
-                ),
-              ),
-
-              Positioned(
-                bottom: 16,
-                left: 0,
-                right: 0,
-                child: ShutterRow(
-                  onCapture: () => _capture(controller),
-                  onFlip: () => ref
-                      .read(cameraControllerProvider.notifier)
-                      .flipCamera(),
-                ),
+              CameraBottomBar(
+                suggestions: analysis.suggestions,
+                isAutoMode: isAutoMode,
+                manualMode: manualMode,
+                onModeSelected: (mode) {
+                  ref.read(manualSceneModeProvider.notifier).state =
+                      mode == SceneMode.auto ? null : mode;
+                },
+                onCapture: () => _capture(controller),
+                onFlip: () => ref
+                    .read(cameraControllerProvider.notifier)
+                    .flipCamera(),
               ),
 
               Consumer(
@@ -199,35 +180,46 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     HapticFeedback.heavyImpact();
     final file =
         await ref.read(cameraControllerProvider.notifier).capture();
-    
-    if (file != null && mounted) {
-      // Show flash after capture
-      ref.read(shutterFlashProvider.notifier).state = true;
-      await Future.delayed(const Duration(milliseconds: 80));
-      if (mounted) {
-        ref.read(shutterFlashProvider.notifier).state = false;
-      }
-      
-      // Save image to device gallery
-      final result = await ImageGallerySaver.saveFile(file.path);
-      final isSuccess = result['isSuccess'] ?? false;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isSuccess ? 'Saved to gallery' : 'Failed to save'),
-          backgroundColor: isSuccess ? AppColors.card : Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+
+    if (!mounted || file == null) return;
+
+    ref.read(shutterFlashProvider.notifier).state = true;
+    await Future.delayed(const Duration(milliseconds: 80));
+    if (mounted) {
+      ref.read(shutterFlashProvider.notifier).state = false;
     }
+
+    final result = await ImageGallerySaver.saveFile(file.path);
+    if (!mounted) return;
+
+    final isSuccess = result['isSuccess'] == true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle_rounded : Icons.error_outline,
+              color: isSuccess ? AppColors.success : AppColors.accent2,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                isSuccess ? 'Photo saved to gallery' : 'Could not save photo',
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.card,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }
 
 class _CameraPreview extends StatelessWidget {
   final CameraController controller;
+
   const _CameraPreview({required this.controller});
 
   @override
@@ -249,54 +241,74 @@ class _LoadingView extends StatelessWidget {
   const _LoadingView();
 
   @override
-  Widget build(BuildContext context) => const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.accent),
-            SizedBox(height: 16),
-            Text(
-              'Warming up camera…',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
             ),
-          ],
-        ),
-      );
+            child: const CircularProgressIndicator(
+              color: AppColors.accent,
+              strokeWidth: 2.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Starting camera…',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ErrorView extends StatelessWidget {
   final String error;
+
   const _ErrorView({required this.error});
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.camera_alt_outlined,
-                  color: AppColors.accent2, size: 48),
-              const SizedBox(height: 16),
-              const Text(
-                'Camera unavailable',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error,
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 13,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: AppColors.accent2.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.videocam_off_outlined,
+              color: AppColors.accent2,
+              size: 36,
+            ),
           ),
-        ),
-      );
+          const SizedBox(height: 20),
+          Text(
+            'Camera unavailable',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
 }
