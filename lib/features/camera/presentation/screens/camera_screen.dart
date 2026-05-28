@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,7 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/enums/scene_mode.dart';
+import '../../domain/models/frame_analysis.dart';
 import '../painters/composition_painter.dart';
 import '../widgets/camera_bottom_bar.dart';
 import '../widgets/hud_bar.dart';
@@ -23,6 +26,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late AnimationController _overlayAnimCtrl;
   late Animation<double> _overlayFade;
+  Timer? _smartCaptureTimer;
+  bool _isCapturing = false;
+  int _smartCountdown = 0;
 
   @override
   void initState() {
@@ -42,6 +48,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _overlayAnimCtrl.dispose();
+    _smartCaptureTimer?.cancel();
     super.dispose();
   }
 
@@ -66,6 +73,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     final overlayBase = ref.watch(overlayOpacityProvider);
     final manualMode = ref.watch(manualSceneModeProvider);
     final isAutoMode = manualMode == null;
+    final smartCaptureEnabled = ref.watch(smartCaptureProvider);
+    final isStill = ref.watch(deviceStillProvider);
 
     ref.listen(overlayOpacityProvider, (prev, next) {
       if (next > (prev ?? 0)) {
@@ -82,6 +91,11 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
         loading: () => const _LoadingView(),
         error: (e, _) => _ErrorView(error: e.toString()),
         data: (controller) {
+          _maybeHandleSmartCapture(
+            analysis: analysis,
+            enabled: smartCaptureEnabled,
+            isStill: isStill,
+          );
           return Stack(
             fit: StackFit.expand,
             children: [
@@ -151,7 +165,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                   ref.read(manualSceneModeProvider.notifier).state =
                       mode == SceneMode.auto ? null : mode;
                 },
-                onCapture: () => _capture(controller),
+                onCapture: () => _capture(),
                 onFlip: () => ref
                     .read(cameraControllerProvider.notifier)
                     .flipCamera(),
@@ -169,6 +183,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                   );
                 },
               ),
+              if (_smartCountdown > 0)
+                _SmartCaptureCountdown(value: _smartCountdown),
             ],
           );
         },
@@ -176,42 +192,128 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     );
   }
 
-  Future<void> _capture(CameraController controller) async {
-    HapticFeedback.heavyImpact();
-    final file =
-        await ref.read(cameraControllerProvider.notifier).capture();
+  Future<void> _capture() async {
+    if (_isCapturing) return;
+    _isCapturing = true;
+    try {
+      HapticFeedback.heavyImpact();
+      final file =
+          await ref.read(cameraControllerProvider.notifier).capture();
 
-    if (!mounted || file == null) return;
+      if (!mounted || file == null) return;
 
-    ref.read(shutterFlashProvider.notifier).state = true;
-    await Future.delayed(const Duration(milliseconds: 80));
-    if (mounted) {
-      ref.read(shutterFlashProvider.notifier).state = false;
+      ref.read(shutterFlashProvider.notifier).state = true;
+      await Future.delayed(const Duration(milliseconds: 80));
+      if (mounted) {
+        ref.read(shutterFlashProvider.notifier).state = false;
+      }
+
+      final result = await ImageGallerySaver.saveFile(file.path);
+      if (!mounted) return;
+
+      final isSuccess = result['isSuccess'] == true;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                isSuccess ? Icons.check_circle_rounded : Icons.error_outline,
+                color: isSuccess ? AppColors.success : AppColors.accent2,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  isSuccess
+                      ? 'Photo saved to gallery'
+                      : 'Could not save photo',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.card,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      _isCapturing = false;
+    }
+  }
+
+  void _maybeHandleSmartCapture({
+    required FrameAnalysis analysis,
+    required bool enabled,
+    required bool isStill,
+  }) {
+    if (!enabled || _isCapturing) {
+      _cancelSmartCapture();
+      return;
     }
 
-    final result = await ImageGallerySaver.saveFile(file.path);
-    if (!mounted) return;
+    final ready = isStill &&
+        analysis.compositionScore >= 92 &&
+        analysis.horizonTiltDeg.abs() < 1.2;
+    if (!ready) {
+      _cancelSmartCapture();
+      return;
+    }
 
-    final isSuccess = result['isSuccess'] == true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isSuccess ? Icons.check_circle_rounded : Icons.error_outline,
-              color: isSuccess ? AppColors.success : AppColors.accent2,
-              size: 20,
+    if (_smartCaptureTimer != null || _smartCountdown > 0) return;
+    if (mounted) setState(() => _smartCountdown = 2);
+
+    _smartCaptureTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        _smartCaptureTimer = null;
+        return;
+      }
+      if (_smartCountdown > 1) {
+        setState(() => _smartCountdown -= 1);
+        return;
+      }
+
+      timer.cancel();
+      _smartCaptureTimer = null;
+      setState(() => _smartCountdown = 0);
+      _capture();
+    });
+  }
+
+  void _cancelSmartCapture() {
+    _smartCaptureTimer?.cancel();
+    _smartCaptureTimer = null;
+    if (_smartCountdown != 0 && mounted) {
+      setState(() => _smartCountdown = 0);
+    }
+  }
+}
+
+class _SmartCaptureCountdown extends StatelessWidget {
+  final int value;
+  const _SmartCaptureCountdown({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Center(
+        child: Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.55),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.45)),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '$value',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 40,
+              fontWeight: FontWeight.w800,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                isSuccess ? 'Photo saved to gallery' : 'Could not save photo',
-              ),
-            ),
-          ],
+          ),
         ),
-        backgroundColor: AppColors.card,
-        duration: const Duration(seconds: 2),
       ),
     );
   }

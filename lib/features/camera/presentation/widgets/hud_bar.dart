@@ -54,6 +54,8 @@ class HudBar extends ConsumerWidget {
           builder: (context, ref, _) {
             final opacity = ref.watch(overlayOpacityProvider);
             final isAuto = ref.watch(autoOpacityProvider);
+            final smartCaptureEnabled = ref.watch(smartCaptureProvider);
+            final lockEnabled = ref.watch(compositionLockProvider);
 
             return Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -112,6 +114,50 @@ class HudBar extends ConsumerWidget {
                             ref.read(overlayOpacityProvider.notifier).state =
                                 AppConstants.overlayOpacityActive;
                           }
+                        },
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Smart auto capture',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Capture automatically when frame is steady and score is high.',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        value: smartCaptureEnabled,
+                        onChanged: (val) {
+                          ref.read(smartCaptureProvider.notifier).state = val;
+                        },
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Composition lock',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Freeze scene detection and coaching until unlocked.',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        value: lockEnabled,
+                        onChanged: (val) {
+                          ref.read(compositionLockProvider.notifier).state = val;
                         },
                       ),
                       const SizedBox(height: 8),

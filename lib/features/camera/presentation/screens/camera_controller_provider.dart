@@ -33,6 +33,8 @@ final autoOpacityProvider = StateProvider<bool>((ref) => true);
 final shutterFlashProvider = StateProvider<bool>((ref) => false);
 
 final deviceStillProvider = StateProvider<bool>((ref) => false);
+final smartCaptureProvider = StateProvider<bool>((ref) => false);
+final compositionLockProvider = StateProvider<bool>((ref) => false);
 
 class CameraControllerNotifier extends AsyncNotifier<CameraController> {
   late SceneDetectorService _sceneDetector;
@@ -107,6 +109,8 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
 
   void _startImageStream(CameraController controller) {
     controller.startImageStream((image) {
+      if (ref.read(compositionLockProvider)) return;
+
       final camera = _activeCamera ?? cameras[_cameraIndex];
       final rotation = rotationFromSensorOrientation(camera.sensorOrientation);
       final manualScene = ref.read(manualSceneModeProvider);
