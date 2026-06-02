@@ -29,7 +29,7 @@ extension SceneModeX on SceneMode {
 
   String get emoji {
     switch (this) {
-      case SceneMode.portrait:     return '🤳';
+      case SceneMode.portrait:     return '👤';
       case SceneMode.selfie:       return '🤳';
       case SceneMode.landscape:    return '🌄';
       case SceneMode.food:         return '🍽';

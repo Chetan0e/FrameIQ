@@ -239,7 +239,7 @@ class CoachingEngine {
     final Offset target;
     switch (style) {
       case SelfiePostureStyle.environmental:
-        target = Offset(0.5, 0.34);
+        target = const Offset(0.5, 0.34);
       case SelfiePostureStyle.symmetryCenter:
         target = const Offset(0.5, 0.30);
       case SelfiePostureStyle.casualCenter:

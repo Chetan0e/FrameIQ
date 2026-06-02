@@ -191,7 +191,7 @@ class CompositionPainter extends CustomPainter {
     final h = size.height;
     final px = w * 0.618;
     canvas.drawLine(Offset(0, h), Offset(w, 0), _spiralPaint);
-    canvas.drawLine(Offset(0, 0), Offset(px, h), _spiralPaint);
+    canvas.drawLine(const Offset(0, 0), Offset(px, h), _spiralPaint);
     canvas.drawLine(Offset(w, h), Offset(px, 0), _spiralPaint);
   }
 

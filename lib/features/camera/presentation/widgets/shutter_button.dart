@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_container.dart';
 
+import '../../../gallery/presentation/screens/gallery_screen.dart';
+
 class ShutterRow extends StatelessWidget {
   final VoidCallback onCapture;
   final VoidCallback onFlip;
@@ -24,8 +26,14 @@ class ShutterRow extends StatelessWidget {
           _SideControl(
             icon: Icons.photo_library_outlined,
             label: 'Gallery',
-            onTap: () {},
-            enabled: false,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const GalleryScreen(),
+                ),
+              );
+            },
+            enabled: true,
           ),
           _ShutterButton(onTap: onCapture),
           _SideControl(

@@ -3,7 +3,7 @@ import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 /// Builds an [InputImage] from a camera stream frame with correct format per platform.
 InputImage cameraImageToInputImage(

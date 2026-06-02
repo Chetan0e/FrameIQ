@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import '../../../../core/settings/settings_provider.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../main.dart';
@@ -43,6 +45,7 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
   StreamSubscription<AccelerometerEvent>? _accelSub;
   bool _isProcessingScene = false;
   bool _isProcessingPose = false;
+  bool _isLevel = false;
   int _cameraIndex = 0;
   DateTime? _lastSceneAt;
   DateTime? _lastPoseAt;
@@ -95,6 +98,14 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
 
       final tilt = _engine.horizonTiltDeg;
       ref.read(frameAnalysisProvider.notifier).updateTilt(tilt);
+
+      // Level Haptics
+      final settings = ref.read(settingsProvider);
+      final isNowLevel = tilt.abs() < 1.0;
+      if (settings.levelHapticsEnabled && isNowLevel && !_isLevel) {
+        HapticFeedback.lightImpact();
+      }
+      _isLevel = isNowLevel;
 
       if (ref.read(autoOpacityProvider)) {
         final analysis = ref.read(frameAnalysisProvider);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/settings/settings_provider.dart';
 
 import '../../domain/enums/scene_mode.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -49,46 +50,87 @@ class HudBar extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (context) {
-        return Consumer(
-          builder: (context, ref, _) {
-            final opacity = ref.watch(overlayOpacityProvider);
-            final isAuto = ref.watch(autoOpacityProvider);
-            final smartCaptureEnabled = ref.watch(smartCaptureProvider);
-            final lockEnabled = ref.watch(compositionLockProvider);
+      isScrollControlled: true,
+      builder: (context) => const _SettingsSheetContents(),
+    );
+  }
+}
 
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-              child: GlassContainer(
-                borderRadius: 24,
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                child: SafeArea(
-                  top: false,
+class _SettingsSheetContents extends ConsumerStatefulWidget {
+  const _SettingsSheetContents();
+
+  @override
+  ConsumerState<_SettingsSheetContents> createState() => _SettingsSheetContentsState();
+}
+
+class _SettingsSheetContentsState extends ConsumerState<_SettingsSheetContents> {
+  late TextEditingController _apiKeyCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = ref.read(settingsProvider);
+    _apiKeyCtrl = TextEditingController(text: settings.apiKey);
+  }
+
+  @override
+  void dispose() {
+    _apiKeyCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final opacity = ref.watch(overlayOpacityProvider);
+    final isAuto = ref.watch(autoOpacityProvider);
+    final smartCaptureEnabled = ref.watch(smartCaptureProvider);
+    final lockEnabled = ref.watch(compositionLockProvider);
+    final settings = ref.watch(settingsProvider);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        12,
+        0,
+        12,
+        12 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: GlassContainer(
+        borderRadius: 24,
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                'Camera Settings',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Customize guides and configure AI coach.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.45,
+                ),
+                child: SingleChildScrollView(
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(
-                        child: Container(
-                          width: 36,
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.22),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        'Camera settings',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tune composition guides on the live preview.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 8),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
@@ -160,7 +202,29 @@ class HudBar extends ConsumerWidget {
                           ref.read(compositionLockProvider.notifier).state = val;
                         },
                       ),
-                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Horizon haptics',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Vibrate when camera becomes perfectly level.',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        value: settings.levelHapticsEnabled,
+                        onChanged: (val) {
+                          ref.read(settingsProvider.notifier).setLevelHaptics(val);
+                        },
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -191,14 +255,113 @@ class HudBar extends ConsumerWidget {
                               val;
                         },
                       ),
+                      const Divider(color: Colors.white10, height: 24),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'AI API Key (Gemini or OpenRouter)',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Enter your direct Google Gemini key (starts with AIzaSy) or OpenRouter key (starts with sk-or). Both are auto-detected.',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _apiKeyCtrl,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          hintText: 'AIzaSy... / sk-or-...',
+                          hintStyle: const TextStyle(color: Colors.white24, fontSize: 13),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.05),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: AppColors.accent,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                        ),
+                        onChanged: (val) {
+                          ref.read(settingsProvider.notifier).setApiKey(val);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'AI Coach Model',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          DropdownButton<String>(
+                            value: settings.model,
+                            dropdownColor: AppColors.surface,
+                            underline: const SizedBox(),
+                            style: const TextStyle(
+                              color: AppColors.accent,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'google/gemini-2.0-flash',
+                                child: Text('Gemini 2.0 Flash (Rec.)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'google/gemini-flash-1.5',
+                                child: Text('Gemini 1.5 Flash'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'google/gemini-pro-1.5',
+                                child: Text('Gemini 1.5 Pro'),
+                              ),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                ref.read(settingsProvider.notifier).setModel(val);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
-            );
-          },
-        );
-      },
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

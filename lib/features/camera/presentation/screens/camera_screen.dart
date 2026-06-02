@@ -14,6 +14,7 @@ import '../widgets/camera_bottom_bar.dart';
 import '../widgets/hud_bar.dart';
 import '../widgets/score_meter.dart';
 import 'camera_controller_provider.dart';
+import '../../../gallery/presentation/controllers/gallery_notifier.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
@@ -207,6 +208,15 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       if (mounted) {
         ref.read(shutterFlashProvider.notifier).state = false;
       }
+
+      // Save to local coached gallery
+      final analysis = ref.read(frameAnalysisProvider);
+      await ref.read(galleryNotifierProvider.notifier).savePhoto(
+            file: file,
+            score: analysis.compositionScore,
+            sceneMode: analysis.detectedScene,
+            suggestions: analysis.suggestions.map((s) => s.message).toList(),
+          );
 
       final result = await ImageGallerySaver.saveFile(file.path);
       if (!mounted) return;
