@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/settings/settings_provider.dart';
 import '../../domain/enums/scene_mode.dart';
 import '../../domain/models/frame_analysis.dart';
 import '../painters/composition_painter.dart';
@@ -260,8 +261,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       return;
     }
 
+    final settings = ref.read(settingsProvider);
+    final minScore = settings.smartCaptureMinScore;
     final ready = isStill &&
-        analysis.compositionScore >= 92 &&
+        analysis.compositionScore >= minScore &&
         analysis.horizonTiltDeg.abs() < 1.2;
     if (!ready) {
       _cancelSmartCapture();

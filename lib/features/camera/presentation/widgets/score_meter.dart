@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/glass_container.dart';
@@ -16,7 +17,9 @@ class ScoreMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
+    final isHigh = score >= 85;
+
+    Widget meter = GlassContainer(
       borderRadius: 20,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: SizedBox(
@@ -83,5 +86,17 @@ class ScoreMeter extends StatelessWidget {
         ),
       ),
     );
+
+    if (isHigh) {
+      meter = meter
+          .animate(onPlay: (controller) => controller.repeat(reverse: true))
+          .shimmer(
+            duration: 1600.ms,
+            color: _color.withValues(alpha: 0.25),
+            curve: Curves.easeInOut,
+          );
+    }
+
+    return meter;
   }
 }

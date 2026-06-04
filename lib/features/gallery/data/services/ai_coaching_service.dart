@@ -25,6 +25,10 @@ class AiCoachingService {
           geminiModel = 'gemini-1.5-pro';
         } else if (model.contains('2.0-flash')) {
           geminiModel = 'gemini-2.0-flash';
+        } else if (model.contains('2.5-flash')) {
+          geminiModel = 'gemini-2.5-flash';
+        } else if (model.contains('2.5-pro')) {
+          geminiModel = 'gemini-2.5-pro';
         }
 
         final response = await _dio.post(

@@ -180,6 +180,43 @@ class _SettingsSheetContentsState extends ConsumerState<_SettingsSheetContents> 
                           ref.read(smartCaptureProvider.notifier).state = val;
                         },
                       ),
+                      if (smartCaptureEnabled) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, bottom: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Smart capture threshold',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '${settings.smartCaptureMinScore}',
+                                style: const TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Slider(
+                          value: settings.smartCaptureMinScore.toDouble(),
+                          min: 80,
+                          max: 98,
+                          divisions: 18,
+                          onChanged: (val) {
+                            ref
+                                .read(settingsProvider.notifier)
+                                .setSmartCaptureMinScore(val.round());
+                          },
+                        ),
+                      ],
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
@@ -334,8 +371,16 @@ class _SettingsSheetContentsState extends ConsumerState<_SettingsSheetContents> 
                             ),
                             items: const [
                               DropdownMenuItem(
+                                value: 'google/gemini-2.5-flash',
+                                child: Text('Gemini 2.5 Flash (Rec.)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'google/gemini-2.5-pro',
+                                child: Text('Gemini 2.5 Pro'),
+                              ),
+                              DropdownMenuItem(
                                 value: 'google/gemini-2.0-flash',
-                                child: Text('Gemini 2.0 Flash (Rec.)'),
+                                child: Text('Gemini 2.0 Flash'),
                               ),
                               DropdownMenuItem(
                                 value: 'google/gemini-flash-1.5',
