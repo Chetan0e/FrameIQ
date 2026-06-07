@@ -8,7 +8,7 @@
   [![State Management](https://img.shields.io/badge/Riverpod-2.x-1099f7)](https://riverpod.dev/)
 
   <p>
-    An intelligent mobile camera app that acts as your personal photography mentor. FrameIQ detects scenes, analyzes subjects, and overlays dynamic composition guides at 60fps—so you can capture the perfect shot every time.
+    An intelligent mobile camera app that acts as your personal photography mentor. FrameIQ detects scenes, analyzes subjects, and overlays dynamic composition guides at 60fps—so you can capture the perfect shot every time without any best shot missing.
   </p>
 </div>
 
