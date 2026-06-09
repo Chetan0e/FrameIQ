@@ -4,7 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/settings/settings_provider.dart';
@@ -216,13 +216,20 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
             file: file,
             score: analysis.compositionScore,
             sceneMode: analysis.detectedScene,
+            compositionType: analysis.recommendedComposition,
             suggestions: analysis.suggestions.map((s) => s.message).toList(),
           );
 
-      final result = await ImageGallerySaver.saveFile(file.path);
+      bool isSuccess = false;
+      try {
+        await Gal.putImage(file.path);
+        isSuccess = true;
+      } catch (e) {
+        debugPrint('Failed to save to gallery: $e');
+      }
+
       if (!mounted) return;
 
-      final isSuccess = result['isSuccess'] == true;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(

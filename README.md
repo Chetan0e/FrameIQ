@@ -306,12 +306,12 @@ The app uses bundled ML Kit models with auto-download disabled for faster startu
 
 ---
 
-## 🚀 Roadmap (Phase 2)
-We are actively building out advanced functionality:
-- [ ] **Gallery Review**: View saved photos layered with the composition guides used to take them.
-- [ ] **Learn Mode**: Tap any suggestion pill for a full-screen diagram and photography lesson.
-- [ ] **OpenRouter AI Gen Tip**: Offload snapshot thumbnails to an LLM (Gemini Flash) for deep contextual advice.
-- [ ] **Pro Overlays**: Introduce Phi Grids and the Rule of Odds.
+## 🚀 Roadmap (Phase 2 - Completed)
+We have successfully built out these advanced functionalities:
+- [x] **Gallery Review**: View saved photos layered with the composition guides used to take them.
+- [x] **Learn Mode**: Tap any suggestion pill for a full-screen diagram and photography lesson.
+- [x] **OpenRouter AI Gen Tip**: Offload snapshot thumbnails to an LLM (Gemini Flash/OpenRouter) for deep contextual advice.
+- [x] **Pro Overlays**: Introduce Phi Grids and the Rule of Odds.
 
 ---
 

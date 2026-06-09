@@ -9,6 +9,7 @@ import '../../../camera/domain/enums/scene_mode.dart';
 import '../../data/services/ai_coaching_service.dart';
 import '../controllers/gallery_notifier.dart';
 import '../../../../core/settings/settings_provider.dart';
+import '../../../camera/presentation/painters/composition_painter.dart';
 
 class PhotoDetailScreen extends ConsumerStatefulWidget {
   final String photoId;
@@ -137,9 +138,15 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
               child: Center(
                 child: Hero(
                   tag: 'photo_${photo.id}',
-                  child: Image.file(
-                    File(photo.filePath),
-                    fit: BoxFit.contain,
+                  child: CustomPaint(
+                    foregroundPainter: CompositionPainter(
+                      type: photo.compositionType,
+                      opacity: 1.0,
+                    ),
+                    child: Image.file(
+                      File(photo.filePath),
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ),

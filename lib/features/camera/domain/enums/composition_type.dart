@@ -7,6 +7,8 @@ enum CompositionType {
   diagonal,
   centerFrame,
   selfiePosture,
+  phiGrid,
+  ruleOfOdds,
   none,
 }
 
@@ -21,6 +23,8 @@ extension CompositionTypeX on CompositionType {
       case CompositionType.diagonal:       return 'Diagonal';
       case CompositionType.centerFrame:    return 'Center Frame';
       case CompositionType.selfiePosture:  return 'Selfie Posture';
+      case CompositionType.phiGrid:        return 'Phi Grid';
+      case CompositionType.ruleOfOdds:     return 'Rule of Odds';
       case CompositionType.none:           return 'None';
     }
   }
@@ -43,6 +47,10 @@ extension CompositionTypeX on CompositionType {
         return 'Subject centered for impact';
       case CompositionType.selfiePosture:
         return 'Match pose to the scene behind you';
+      case CompositionType.phiGrid:
+        return 'Align using the golden ratio';
+      case CompositionType.ruleOfOdds:
+        return 'Group elements in threes or odds';
       case CompositionType.none:
         return '';
     }
@@ -67,6 +75,10 @@ extension CompositionTypeX on CompositionType {
         return ['portrait', 'selfie', 'food', 'architecture'];
       case CompositionType.selfiePosture:
         return ['selfie'];
+      case CompositionType.phiGrid:
+        return ['landscape', 'architecture', 'macro'];
+      case CompositionType.ruleOfOdds:
+        return ['food', 'macro', 'street'];
       case CompositionType.none:
         return [];
     }

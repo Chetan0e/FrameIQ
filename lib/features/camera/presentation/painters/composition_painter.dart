@@ -115,6 +115,12 @@ class CompositionPainter extends CustomPainter {
       case CompositionType.selfiePosture:
         _drawSelfiePosture(canvas, size);
         break;
+      case CompositionType.phiGrid:
+        _drawPhiGrid(canvas, size);
+        break;
+      case CompositionType.ruleOfOdds:
+        _drawRuleOfOdds(canvas, size);
+        break;
       case CompositionType.none:
         break;
     }
@@ -272,6 +278,64 @@ class CompositionPainter extends CustomPainter {
           height: h * scale,
         ),
         _centerPaint,
+      );
+    }
+  }
+
+  // ────────────────────────────────────────────────────
+  // PHI GRID
+  // ────────────────────────────────────────────────────
+  void _drawPhiGrid(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    
+    // Phi grid divides the frame in a 1 : 1.618 : 1 ratio.
+    // 1 / (1 + 1.618 + 1) ≈ 0.276
+    // 2.618 / 3.618 ≈ 0.724
+    final line1X = w * 0.276;
+    final line2X = w * 0.724;
+    final line1Y = h * 0.276;
+    final line2Y = h * 0.724;
+
+    canvas.drawLine(Offset(line1X, 0), Offset(line1X, h), _gridPaint);
+    canvas.drawLine(Offset(line2X, 0), Offset(line2X, h), _gridPaint);
+    canvas.drawLine(Offset(0, line1Y), Offset(w, line1Y), _gridPaint);
+    canvas.drawLine(Offset(0, line2Y), Offset(w, line2Y), _gridPaint);
+
+    for (final x in [line1X, line2X]) {
+      for (final y in [line1Y, line2Y]) {
+        canvas.drawCircle(Offset(x, y), 5, _gridDotPaint);
+        canvas.drawCircle(Offset(x, y), 10, _gridRingPaint);
+      }
+    }
+  }
+
+  // ────────────────────────────────────────────────────
+  // RULE OF ODDS
+  // ────────────────────────────────────────────────────
+  void _drawRuleOfOdds(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final cx = w / 2;
+    final cy = h / 2;
+    
+    // Draw 3 odd focal points
+    final points = [
+      Offset(cx, cy),
+      Offset(cx - w * 0.25, cy + h * 0.1),
+      Offset(cx + w * 0.25, cy - h * 0.1),
+    ];
+
+    for (final p in points) {
+      canvas.drawCircle(p, 6, _gridDotPaint);
+      canvas.drawCircle(p, 14, _gridRingPaint);
+      _drawDashedLine(
+        canvas,
+        Offset(p.dx, p.dy - 30),
+        Offset(p.dx, p.dy + 30),
+        _gridPaint,
+        6,
+        6,
       );
     }
   }

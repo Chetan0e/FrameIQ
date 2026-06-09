@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../camera/domain/enums/scene_mode.dart';
+import '../../../camera/domain/enums/composition_type.dart';
 import '../../domain/models/coached_photo.dart';
 
 final galleryNotifierProvider =
@@ -40,6 +41,7 @@ class GalleryNotifier extends StateNotifier<List<CoachedPhoto>> {
     required XFile file,
     required double score,
     required SceneMode sceneMode,
+    required CompositionType compositionType,
     required List<String> suggestions,
   }) async {
     final appDir = await getApplicationDocumentsDirectory();
@@ -55,6 +57,7 @@ class GalleryNotifier extends StateNotifier<List<CoachedPhoto>> {
       dateTime: DateTime.now(),
       score: score,
       sceneMode: sceneMode,
+      compositionType: compositionType,
       suggestionMessages: suggestions,
     );
 
