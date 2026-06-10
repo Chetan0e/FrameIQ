@@ -69,14 +69,16 @@ class _SideControl extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            GlassContainer(
-              borderRadius: 16,
-              blur: false,
+            Container(
               padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: Colors.transparent,
+                shape: BoxShape.circle,
+              ),
               child: Icon(
                 icon,
                 color: enabled ? Colors.white : AppColors.textMuted,
-                size: 22,
+                size: 26,
               ),
             ),
             const SizedBox(height: 6),
@@ -149,16 +151,9 @@ class _ShutterButtonState extends State<_ShutterButton>
           height: 78,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 3.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accent.withValues(alpha: 0.25),
-                blurRadius: 20,
-                spreadRadius: 1,
-              ),
-            ],
+            border: Border.all(color: Colors.white, width: 4.0),
           ),
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(4),
           child: Container(
             decoration: const BoxDecoration(
               shape: BoxShape.circle,

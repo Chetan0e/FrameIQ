@@ -32,17 +32,8 @@ class CameraBottomBar extends StatelessWidget {
       right: 0,
       bottom: 0,
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-            stops: const [0.0, 0.45, 1.0],
-            colors: [
-              Colors.black.withValues(alpha: 0.92),
-              Colors.black.withValues(alpha: 0.55),
-              Colors.transparent,
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: Colors.black,
         ),
         child: SafeArea(
           top: false,

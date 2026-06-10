@@ -129,15 +129,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                 right: 0,
                 height: 120,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.75),
-                        Colors.transparent,
-                      ],
-                    ),
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
                   ),
                 ),
               ),

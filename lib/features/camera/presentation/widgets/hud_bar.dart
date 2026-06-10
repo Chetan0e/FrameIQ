@@ -416,9 +416,10 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
-      borderRadius: 12,
-      blur: false,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -476,10 +477,12 @@ class _SceneChip extends StatelessWidget {
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 280),
-      child: GlassContainer(
+      child: Container(
         key: ValueKey('$scene$detectedScene'),
-        borderRadius: 20,
-        blur: false,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -492,7 +495,7 @@ class _SceneChip extends StatelessWidget {
             Text(
               '${scene.label}$subtitle',
               style: const TextStyle(
-                color: AppColors.accent3,
+                color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -514,11 +517,13 @@ class _IconCircleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: GlassContainer(
-        borderRadius: 20,
-        blur: false,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.transparent,
+          shape: BoxShape.circle,
+        ),
         padding: const EdgeInsets.all(9),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: Icon(icon, color: Colors.white, size: 24),
       ),
     );
   }

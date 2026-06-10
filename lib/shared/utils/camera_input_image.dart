@@ -17,7 +17,7 @@ InputImage cameraImageToInputImage(
   final bytes = allBytes.done().buffer.asUint8List();
 
   final format =
-      Platform.isIOS ? InputImageFormat.bgra8888 : InputImageFormat.nv21;
+      Platform.isIOS ? InputImageFormat.bgra8888 : InputImageFormat.yuv420;
 
   return InputImage.fromBytes(
     bytes: bytes,
@@ -31,7 +31,7 @@ InputImage cameraImageToInputImage(
 }
 
 ImageFormatGroup imageFormatGroupForPlatform() =>
-    Platform.isIOS ? ImageFormatGroup.bgra8888 : ImageFormatGroup.nv21;
+    Platform.isIOS ? ImageFormatGroup.bgra8888 : ImageFormatGroup.yuv420;
 
 InputImageRotation rotationFromSensorOrientation(int sensorOrientation) {
   switch (sensorOrientation) {

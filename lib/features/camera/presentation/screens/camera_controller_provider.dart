@@ -208,6 +208,7 @@ class CameraControllerNotifier extends AsyncNotifier<CameraController> {
     if (ctrl == null || !ctrl.value.isInitialized) return null;
     try {
       await ctrl.stopImageStream();
+      await Future.delayed(const Duration(milliseconds: 300));
       final file = await ctrl.takePicture();
       _startImageStream(ctrl);
       return file;
