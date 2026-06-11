@@ -7,7 +7,7 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get dark {
-    const radius = 14.0;
+    const radius = 10.0;
 
     return ThemeData(
       useMaterial3: true,
@@ -25,14 +25,15 @@ class AppTheme {
         headlineMedium: TextStyle(
           color: AppColors.textPrimary,
           fontSize: 28,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -0.8,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
           height: 1.15,
         ),
         titleMedium: TextStyle(
           color: AppColors.textPrimary,
           fontSize: 18,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
         ),
         bodyLarge: TextStyle(
           color: AppColors.textPrimary,
@@ -46,9 +47,9 @@ class AppTheme {
         ),
         labelSmall: TextStyle(
           color: AppColors.textMuted,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.8,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
         ),
       ),
       iconTheme: const IconThemeData(color: AppColors.textPrimary),

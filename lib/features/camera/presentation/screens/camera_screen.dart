@@ -123,13 +123,13 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
               ),
 
               // Top vignette
-              Positioned(
+              const Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
                 height: 120,
                 child: DecoratedBox(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: Colors.black,
                   ),
                 ),

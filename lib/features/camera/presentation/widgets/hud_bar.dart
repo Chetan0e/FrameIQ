@@ -437,8 +437,8 @@ class _BrandMark extends StatelessWidget {
             text: const TextSpan(
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.4,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
               ),
               children: [
                 TextSpan(
@@ -480,10 +480,11 @@ class _SceneChip extends StatelessWidget {
       child: Container(
         key: ValueKey('$scene$detectedScene'),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.black.withValues(alpha: 0.4),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 0.5),
+          borderRadius: BorderRadius.circular(6),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

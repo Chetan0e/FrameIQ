@@ -106,8 +106,8 @@ class _SplashView extends StatelessWidget {
               text: const TextSpan(
                 style: TextStyle(
                   fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -1,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.0,
                 ),
                 children: [
                   TextSpan(
@@ -280,7 +280,7 @@ class _LogoBadge extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.accent, Color(0xFFB8E020)],
+          colors: [Colors.white, Color(0xFFB3B3B3)],
         ),
         boxShadow: [
           BoxShadow(

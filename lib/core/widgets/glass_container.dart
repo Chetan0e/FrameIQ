@@ -27,10 +27,10 @@ class GlassContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final panel = DecoratedBox(
       decoration: BoxDecoration(
-        color: (tint ?? Colors.black).withValues(alpha: 0.52),
+        color: (tint ?? Colors.black).withValues(alpha: 0.60),
         borderRadius: BorderRadius.circular(borderRadius),
         border: border ??
-            Border.all(color: Colors.white.withValues(alpha: 0.14)),
+            Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
       ),
       child: padding != null ? Padding(padding: padding!, child: child) : child,
     );
@@ -40,7 +40,7 @@ class GlassContainer extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: panel,
       ),
     );

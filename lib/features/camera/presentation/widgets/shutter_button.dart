@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/widgets/glass_container.dart';
 
 import '../../../gallery/presentation/screens/gallery_screen.dart';
 
@@ -151,9 +150,16 @@ class _ShutterButtonState extends State<_ShutterButton>
           height: 78,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4.0),
+            border: Border.all(color: Colors.white, width: 3.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 10,
+                spreadRadius: 2,
+              )
+            ],
           ),
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(3),
           child: Container(
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
