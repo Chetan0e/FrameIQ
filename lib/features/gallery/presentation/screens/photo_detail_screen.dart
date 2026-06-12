@@ -142,6 +142,7 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
                     foregroundPainter: CompositionPainter(
                       type: photo.compositionType,
                       opacity: 1.0,
+                      showHorizon: false,
                     ),
                     child: Image.file(
                       File(photo.filePath),

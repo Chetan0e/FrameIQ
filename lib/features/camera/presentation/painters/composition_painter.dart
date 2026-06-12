@@ -13,6 +13,7 @@ class CompositionPainter extends CustomPainter {
   final Rect? faceRect;
   final SelfiePostureGuide? postureGuide;
   final Size? cameraPreviewSize;
+  final bool showHorizon;
 
   final Paint _gridPaint = Paint()..style = PaintingStyle.stroke;
   final Paint _gridDotPaint = Paint()..style = PaintingStyle.fill;
@@ -38,6 +39,7 @@ class CompositionPainter extends CustomPainter {
     this.faceRect,
     this.postureGuide,
     this.cameraPreviewSize,
+    this.showHorizon = true,
   });
 
   void _applyOpacity() {
@@ -126,7 +128,9 @@ class CompositionPainter extends CustomPainter {
     }
 
     // Always draw: horizon tilt indicator
-    _drawHorizonIndicator(canvas, size);
+    if (showHorizon) {
+      _drawHorizonIndicator(canvas, size);
+    }
 
     // Always draw: face bounding box if available
     if (faceRect != null) {
@@ -567,5 +571,6 @@ class CompositionPainter extends CustomPainter {
       old.horizonTiltDeg != horizonTiltDeg ||
       old.faceRect != faceRect ||
       old.postureGuide != postureGuide ||
-      old.cameraPreviewSize != cameraPreviewSize;
+      old.cameraPreviewSize != cameraPreviewSize ||
+      old.showHorizon != showHorizon;
 }
