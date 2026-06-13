@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/settings/settings_provider.dart';
@@ -16,6 +17,9 @@ import '../widgets/hud_bar.dart';
 import '../widgets/score_meter.dart';
 import 'camera_controller_provider.dart';
 import '../../../gallery/presentation/controllers/gallery_notifier.dart';
+import '../../../coaching/domain/models/challenge.dart';
+import '../../../coaching/presentation/controllers/challenges_notifier.dart';
+import '../../../../core/widgets/glass_container.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
   const CameraScreen({super.key});
@@ -31,6 +35,8 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
   Timer? _smartCaptureTimer;
   bool _isCapturing = false;
   int _smartCountdown = 0;
+  Challenge? _recentlyUnlockedChallenge;
+  Timer? _toastDismissTimer;
 
   @override
   void initState() {
@@ -51,7 +57,25 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     WidgetsBinding.instance.removeObserver(this);
     _overlayAnimCtrl.dispose();
     _smartCaptureTimer?.cancel();
+    _toastDismissTimer?.cancel();
     super.dispose();
+  }
+
+  void _showChallengeCompletedToast(Challenge challenge) {
+    _toastDismissTimer?.cancel();
+    setState(() {
+      _recentlyUnlockedChallenge = challenge;
+    });
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
+    // Dismiss after 3.5 seconds
+    _toastDismissTimer = Timer(const Duration(milliseconds: 3500), () {
+      if (mounted) {
+        setState(() {
+          _recentlyUnlockedChallenge = null;
+        });
+      }
+    });
   }
 
   @override
@@ -151,7 +175,6 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
                 top: MediaQuery.paddingOf(context).top + 72,
                 child: ScoreMeter(score: analysis.compositionScore),
               ),
-
               CameraBottomBar(
                 suggestions: analysis.suggestions,
                 isAutoMode: isAutoMode,
@@ -180,13 +203,21 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
               ),
               if (_smartCountdown > 0)
                 _SmartCaptureCountdown(value: _smartCountdown),
+              if (_recentlyUnlockedChallenge != null)
+                _ChallengeCompletedToast(
+                  challenge: _recentlyUnlockedChallenge!,
+                  onDismiss: () {
+                    setState(() {
+                      _recentlyUnlockedChallenge = null;
+                    });
+                  },
+                ),
             ],
           );
         },
       ),
     );
   }
-
   Future<void> _capture() async {
     if (_isCapturing) return;
     _isCapturing = true;
@@ -205,13 +236,24 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
       // Save to local coached gallery
       final analysis = ref.read(frameAnalysisProvider);
-      await ref.read(galleryNotifierProvider.notifier).savePhoto(
+      final savedPhoto = await ref.read(galleryNotifierProvider.notifier).savePhoto(
             file: file,
             score: analysis.compositionScore,
             sceneMode: analysis.detectedScene,
             compositionType: analysis.recommendedComposition,
             suggestions: analysis.suggestions.map((s) => s.message).toList(),
           );
+
+      // Check challenges completion
+      final unlockedChallenge = await ref.read(challengesProvider.notifier).checkAndUnlockChallenge(
+            photo: savedPhoto,
+            actualTilt: analysis.horizonTiltDeg,
+            faceDetected: analysis.faceDetected,
+          );
+
+      if (unlockedChallenge != null && mounted) {
+        _showChallengeCompletedToast(unlockedChallenge);
+      }
 
       bool isSuccess = false;
       try {
@@ -424,6 +466,99 @@ class _ErrorView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ChallengeCompletedToast extends StatelessWidget {
+  final Challenge challenge;
+  final VoidCallback onDismiss;
+
+  const _ChallengeCompletedToast({
+    required this.challenge,
+    required this.onDismiss,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: MediaQuery.paddingOf(context).top + 72,
+      left: 16,
+      right: 16,
+      child: GestureDetector(
+        onTap: onDismiss,
+        child: GlassContainer(
+          borderRadius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          border: Border.all(color: AppColors.accent.withValues(alpha: 0.6), width: 1.5),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.emoji_events_rounded,
+                  color: AppColors.accent,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'QUEST COMPLETED!',
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      challenge.title,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '+${challenge.xpReward} XP',
+                  style: const TextStyle(
+                    color: AppColors.success,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      )
+          .animate()
+          .scale(begin: const Offset(0.9, 0.9), duration: 250.ms, curve: Curves.easeOutBack)
+          .fadeIn(duration: 200.ms)
+          .then(delay: 2800.ms)
+          .slideY(end: -0.3, duration: 400.ms, curve: Curves.easeIn)
+          .fadeOut(duration: 350.ms),
     );
   }
 }

@@ -37,7 +37,7 @@ class GalleryNotifier extends StateNotifier<List<CoachedPhoto>> {
     }
   }
 
-  Future<String> savePhoto({
+  Future<CoachedPhoto> savePhoto({
     required XFile file,
     required double score,
     required SceneMode sceneMode,
@@ -64,7 +64,7 @@ class GalleryNotifier extends StateNotifier<List<CoachedPhoto>> {
     final updated = [newPhoto, ...state];
     state = updated;
     await _persist();
-    return savedFile.path;
+    return newPhoto;
   }
 
   Future<void> deletePhoto(String id) async {

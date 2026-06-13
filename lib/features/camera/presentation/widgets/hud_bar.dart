@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/settings/settings_provider.dart';
+import '../../../coaching/presentation/screens/challenges_screen.dart';
 
 import '../../domain/enums/scene_mode.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -36,6 +37,17 @@ class HudBar extends ConsumerWidget {
             detectedScene: detectedScene,
           ),
           const SizedBox(width: 10),
+          _IconCircleButton(
+            icon: Icons.emoji_events_outlined,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ChallengesScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 4),
           _IconCircleButton(
             icon: Icons.tune_rounded,
             onTap: () => _showSettingsSheet(context, ref),
